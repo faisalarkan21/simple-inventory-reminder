@@ -1,16 +1,22 @@
 import {
+  Body,
   Button,
   Container,
   Content,
   Fab,
+  Left,
   List,
   ListItem,
+  Right,
   Text,
+  Thumbnail,
 } from 'native-base';
-
-import Icon from 'react-native-vector-icons/FontAwesome';
 import React from 'react';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import InventoryService from '../../services/InventoryService';
+import {formatDate} from '../../utils/Moment';
+import {formatCurrency} from '../../utils/Currency';
+import {priorityKeys} from '../../utils/Keys';
 
 export default class TestRealm extends React.Component {
   constructor(props) {
@@ -22,22 +28,20 @@ export default class TestRealm extends React.Component {
   }
 
   componentDidMount() {
-    // new InventoryService().save(new InventoryModel({
-    //   name: 'string',
-    //   photo: 'string',
-    //   quantity: 1,
-    //   price: 1,
-    //   brand: 'string',
-    //   description: 'string',
-    //   priority: 1,
-    // }))
+    this.willBlurListener = this.props.navigation.addListener('focus', () => {
+      this.renderInventory();
+    });
+  }
 
-    this.renderInventory();
+  componentWillUnmount() {
+    this.willBlurListener();
   }
 
   handleRedirect = (type: string) => {
     const {navigation} = this.props;
 
+
+    console.log('type', type)
     if (!this.state.active) {
       return;
     }
@@ -49,13 +53,35 @@ export default class TestRealm extends React.Component {
     let tempListInventory = [];
     new InventoryService().getAll().then(inventory => {
       inventory.forEach(v => {
+        console.log('tempListInventory', v);
         tempListInventory.push(
-          <ListItem>
-            <Text>{v.name}</Text>
+          <ListItem thumbnail>
+            <Left>
+              <Thumbnail square source={{uri: 'Image URL'}} />
+            </Left>
+            <Body>
+              <Text>{v.name}</Text>
+              <Text note numberOfLines={1}>
+                {formatDate(v.updatedAt)}
+              </Text>
+              <Text note numberOfLines={1}>
+                Price : {formatCurrency(v.price)}
+              </Text>
+              <Text note numberOfLines={1}>
+                Quantity : {v.quantity}
+              </Text>
+              <Text note numberOfLines={1}>
+                Priority : {priorityKeys(v.priority)}
+              </Text>
+            </Body>
+            <Right>
+              <Button onPress={() => this.handleRedirect('edit')} transparent>
+                <Text>Edit</Text>
+              </Button>
+            </Right>
           </ListItem>,
         );
       });
-      console.log('tempListInventory', tempListInventory);
 
       // return inventory;
       this.setState({
@@ -65,8 +91,7 @@ export default class TestRealm extends React.Component {
   };
 
   render() {
-    console.log('renderInventory', this.props);
-
+    console.log('renderInventory', this.props, this.state);
     return (
       <>
         <Container>

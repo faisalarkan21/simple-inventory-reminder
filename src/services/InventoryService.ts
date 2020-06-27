@@ -19,7 +19,7 @@ const schemaInventory = {
 
 export default class InventoryService {
   save(inventory: InventoryModel) {
-    realm
+    return realm
       .open({
         schema: [schemaInventory],
       })
@@ -27,7 +27,8 @@ export default class InventoryService {
         realm.write(() => {
           realm.create('Inventory', inventory);
         });
-      });
+      })
+      .catch(e => console.error(e));
   }
 
   getAll() {
